@@ -130,11 +130,10 @@ const EduInfo = ({ data, school }) => {
       <h3>Thông tin học vấn</h3>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <ControlSelect
+          <ControlTextField
             label="Tên trường"
             control={control}
             name="school_id"
-            list={school}
           />
         </Grid>
 

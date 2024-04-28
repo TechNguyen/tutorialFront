@@ -20,10 +20,10 @@ const Payment = () => {
         if (res.status === 200) {
           if (res.data.data.code) {
             router.push(ROOT_PATH);
-            enqueueSnackbar({
-              message: 'Thanh toán thành công!',
-              variant: 'success'
-            });
+            // enqueueSnackbar({
+            //   message: 'Thanh toán thành công!',
+            //   variant: 'success'
+            // });
             return;
           } else {
             enqueueSnackbar({

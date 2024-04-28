@@ -5,8 +5,27 @@ import 'swiper/css/navigation';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import SubjectCard from '../card/SubjectCard';
+import { useEffect, useState } from 'react';
+import api from '@/api';
 
 const SubjectSection = () => {
+
+
+  const [subjectList, setsubjectList] = useState([])
+  const getSubject = async () => {
+     try {
+      const rs = await api.get('/category')
+      if(rs.status == 200) {
+        setsubjectList(rs.data.data)
+      }
+     } catch (e) {
+      console.log(e);
+     }
+  }
+  useEffect(() => {
+    getSubject()
+  }, [])
+
   return (
     <Stack
       direction="column"
@@ -33,8 +52,8 @@ const SubjectSection = () => {
         }}
       >
         {subjectList.map((item, i) => (
-          <SwiperSlide key={i}>
-            <SubjectCard name={item.name} src={item.img} />
+          <SwiperSlide key={item.category_id}>
+            <SubjectCard name={item.name} src={item.image_url} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -43,42 +62,3 @@ const SubjectSection = () => {
 };
 
 export default SubjectSection;
-
-const subjectList = [
-  {
-    img: 'https://i.imgur.com/vHdhOup.png',
-    name: 'Toán học'
-  },
-  {
-    img: 'https://i.imgur.com/7ya8smz.png',
-    name: 'Vật Lý'
-  },
-  {
-    img: 'https://i.imgur.com/pAedHwG.png',
-    name: 'Hóa Học'
-  },
-  {
-    img: 'https://i.imgur.com/sz1XIGD.png',
-    name: 'Địa Lý'
-  },
-  {
-    img: 'https://i.imgur.com/ecoSAH0.png',
-    name: 'Ngoại ngữ'
-  },
-  {
-    img: 'https://i.imgur.com/LO0piiO.png',
-    name: 'Mỹ thuật'
-  },
-  {
-    img: 'https://i.imgur.com/uvMFov8.png',
-    name: 'Tin học'
-  },
-  {
-    img: 'https://i.imgur.com/sz1XIGD.png',
-    name: 'Ngữ văn'
-  },
-  {
-    img: 'https://i.imgur.com/jbDBAoK.png',
-    name: 'Môn học khác'
-  }
-];

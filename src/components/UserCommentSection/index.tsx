@@ -5,6 +5,8 @@ import SendCommentTextFiled from './SendCommentTextFiled';
 import UserComment from './UserComment';
 import api from '@/api';
 import { jwtDecode } from 'jwt-decode';
+import Snackbar from '@mui/material/Snackbar';
+
 const UserCommentSection = ({id}) => {
 
   
@@ -12,6 +14,25 @@ const UserCommentSection = ({id}) => {
   const [commentRely, setCommentRely] = useState<any>(null);
   const [dataList, setDataList] = useState<any>([])
   const [checkAdd, setAdd] = useState<boolean>(false)
+
+
+
+  const [open, setOpen] = useState(false);
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -30,25 +51,29 @@ const UserCommentSection = ({id}) => {
   }, [id,checkAdd])
   const handleSubmitForm = async ({comment}) => {
     const token = localStorage.getItem('access_token');
-    const decoded = jwtDecode<any>(token);
-    
-    if(id) {
-      const resUser = await api.get(`/tutor/${id}`);
-        if(resUser.status == 200) {
-          const res = await api.post('/comment/create', {
-            content: comment,
-            author_id: resUser.data.data.user.user_id,
-            user_id: decoded?.user_id
-          });
-          if(res.status == 200) {
-            reset();
-            setAdd(!checkAdd)
-        }
-     
+    if(!token) {
+      handleClick();
     } else {
-      console.log('error')
+        const decoded = jwtDecode<any>(token);
+        if(id) {
+          const resUser = await api.get(`/tutor/${id}`);
+            if(resUser.status == 200) {
+              const res = await api.post('/comment/create', {
+                content: comment,
+                author_id: resUser.data.data.user.user_id,
+                user_id: decoded?.user_id
+              });
+              if(res.status == 200) {
+                reset();
+                setAdd(!checkAdd)
+          }
+  
+        } else {
+          console.log('error')
+        }
+      }
     }
-    }
+  
 
  
 
@@ -140,6 +165,14 @@ const UserCommentSection = ({id}) => {
         >
       
       </Grid>}
+
+    <Snackbar
+      open={open}
+      autoHideDuration={3000}
+      onClose={handleClose}
+      message="Bạn cần đăng nhập để đánh giá và bình luận"
+    />
+
     </Grid>
   );
 };

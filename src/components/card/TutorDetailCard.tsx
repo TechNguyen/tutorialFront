@@ -9,9 +9,15 @@ import {
   SpeakLangueIcon,
   StarIcon
 } from '../icons';
+import { useEffect, useState } from 'react';
 
 const TutorDetailCard = ({ data }: TutorDetailCardProps) => {
   const router = useRouter();
+  const [certificate, setCertificates] = useState([])
+
+  useEffect(() => {
+    setCertificates(data.tutor_certifications)
+  }, [])
 
   return (
     <Stack
@@ -53,7 +59,7 @@ const TutorDetailCard = ({ data }: TutorDetailCardProps) => {
                 alignItems="center"
                 gap="8px"
               >
-                <LangueTeachIcon /> Tiếng việt
+                <LangueTeachIcon /> {data?.tutor_educations?.subjects}
               </Typography>
             </Stack>
             <Stack>
@@ -75,12 +81,19 @@ const TutorDetailCard = ({ data }: TutorDetailCardProps) => {
                 alignItems="center"
                 gap="8px"
               >
-                <SpeakLangueIcon /> ngoại ngữ: Tiếng Anh
               </Typography>
             </Stack>
 
             <Typography mt={2} variant="h4">
-              Chứng chỉ TOEIC 800+{' '}
+        
+            {certificate.map((item, i) => (
+            <Typography key={item.user_id}    
+                variant="h4"
+                fontWeight={400}
+                className="text-ellipsis-2-row">
+                  {item.name}
+                </Typography>
+            ))}
             </Typography>
             <Typography
               variant="h4"
@@ -88,38 +101,13 @@ const TutorDetailCard = ({ data }: TutorDetailCardProps) => {
               className="text-ellipsis-2-row"
             >
               {data?.description ||
-                `Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry. Lorem Ipsum has been the industry's standard dummy text
-              ever since the ...`}
+                `Information tutor ...`}
             </Typography>
           </Stack>
         </Stack>
       </>
 
       <Stack justifyContent="space-between" minWidth="25%">
-        <Stack direction="row" justifyContent="space-between">
-          <Stack direction="row" height={52} spacing={2}>
-            <Stack width="fit-content" justifyContent="center">
-              <Typography variant="h3">
-                <StarIcon /> 5
-              </Typography>
-              <Typography variant="h5" color="secondary">
-                9 Reviews
-              </Typography>
-            </Stack>
-            <Stack width="fit-content" justifyContent="center">
-              <Typography variant="h3">200k+</Typography>
-              <Typography variant="h5" color="secondary">
-                45p/1h
-              </Typography>
-            </Stack>
-          </Stack>
-
-          <Typography variant="h2">
-            <HeartIcon />
-          </Typography>
-        </Stack>
-
         <Stack spacing={1}>
           <Button
             sx={{ border: '2px solid #121117' }}
@@ -131,7 +119,7 @@ const TutorDetailCard = ({ data }: TutorDetailCardProps) => {
               })
             }
           >
-            Đặt lịch học
+            Chi tiết
           </Button>
         </Stack>
       </Stack>

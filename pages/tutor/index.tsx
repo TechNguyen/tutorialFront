@@ -2,9 +2,11 @@ import api from '@/api';
 import ControlTextField from '@/components/ControlTextField';
 import TutorDetailCard from '@/components/card/TutorDetailCard';
 import BaseLayout from '@/layouts/BaseLayout';
-import { Container, Grid, Stack, Typography } from '@mui/material';
+import { Autocomplete, Container, Grid, InputLabel, Stack, TextField, Typography } from '@mui/material';
+import { Box } from '@mui/system';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Pagination } from 'antd';
 
 interface FormData {
   name: string;
@@ -22,12 +24,16 @@ const Tutor = () => {
   const searchKey = watch('name');
   const [tutorList, setTutorList] = useState([]);
   const [tutorListRoot, setTutorListRoot] = useState([]);
+  const [subjects,setListSubjects] = useState([]);
+  const [pageSize, setPageSize] = useState();
+  const [value, setValue] = useState(null); 
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   const handleFilter = () => {
     let lists = [...tutorListRoot];
     if (searchKey) {
-      console.log(searchKey);
-
       lists = lists.filter(
         (x) =>
           x?.user?.first_name?.includes(searchKey) ||
@@ -40,22 +46,61 @@ const Tutor = () => {
     }
   };
 
+  const handFilterSubJect = async () => {
+    if(value != null) {
+      let subjectId = value.value;
+      const rs = await api.post(`/category/searchByCategryId/${subjectId}`)
+      setTutorList(rs.data.data);
+    }
+    
+  }
+
   useEffect(() => {
     handleFilter();
   }, [searchKey]);
 
+
+  useEffect(() => {
+    handFilterSubJect()
+  }, [value])
+
+  const changeSize = (current, pageSize) => {
+    console.log(current, pageSize);
+    
+  }
   useEffect(() => {
     const getTutor = async () => {
       try {
         const res = await api.get('/tutor');
+        console.log(res);
+        
         if (res.status === 200) {
           setTutorList(res.data.data);
           setTutorListRoot(res.data.data);
         }
       } catch (error) {}
     };
+    const getSubject = async () => {
+      try {
+       const rs = await api.get('/category')
+       
+       if(rs.status == 200) {
 
+        let subjectArray = [] 
+        rs.data.data.map((item,key) =>  {
+          subjectArray.push({
+            label: item.name,
+            value: item.category_id
+          })
+        })
+        setListSubjects(subjectArray)
+       }
+      } catch (e) {
+       console.log(e);
+      }
+    }
     getTutor();
+    getSubject();
   }, []);
 
   return (
@@ -82,7 +127,7 @@ const Tutor = () => {
               }}
             />
           </Grid>
-          {/* <Grid item xs={4}>
+          <Grid item xs={4}>
             <Box>
               <InputLabel
                 sx={{
@@ -96,20 +141,25 @@ const Tutor = () => {
               <Autocomplete
                 disablePortal
                 id="combo-box-demo"
-                options={top100Films}
+                value={value}
+                options={subjects}
+                onChange={handleChange}
                 sx={{ width: 300 }}
                 renderInput={(params) => (
                   <TextField {...params} fullWidth placeholder="Khóa học" />
                 )}
               />
             </Box>
-          </Grid> */}
+          </Grid>
         </Grid>
 
         {tutorList.map((item) => (
           <TutorDetailCard key={item.tutor_profile_id} data={item} />
         ))}
+
+      <Pagination onChange={changeSize}  defaultCurrent={1} total={500} />
       </Stack>
+
     </Container>
   );
 };

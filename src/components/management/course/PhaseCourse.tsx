@@ -64,7 +64,7 @@ const PhaseCourse = ({ child, setCount, number, add }) => {
         {child.content}
       </Typography>
 
-      <video controls src={child.overview_url}></video>
+      <a target='target' href={child.overview_url}>Xem video</a>
 
       <CoursePhaseFormEdit
         data={child}

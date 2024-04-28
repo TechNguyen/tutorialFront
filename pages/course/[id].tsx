@@ -165,14 +165,14 @@ const CourseDetail = () => {
             Tổng thời lượng của khóa học : {course?.spend_time}
           </Typography>
           <Divider sx={{ mt: 2 }} />
-          <Typography mt={2} variant="h3">
+           <Typography mt={2} variant="h3">
             Nội dung khóa học
           </Typography>
           <Typography my={2} variant="h5" color="secondary">
             {course?.course_programs?.length} chương •{' '}
             {course?.course_program_phases?.length} bài học • thời lượng{' '}
             {course?.spend_time}
-          </Typography>
+          </Typography> 
           <Stack spacing={1}>
             {course?.course_programs?.map((course) => {
               return (
@@ -280,11 +280,8 @@ const CourseDetail = () => {
         onClose={() => setOpen(false)}
         open={open}
       >
-        <DialogTitle>
-          <Typography variant="h1">Chọn lịch học</Typography>
-        </DialogTitle>
-        <Divider />
-        <Stack p={3} width="100%" gap="8px">
+       
+        {/* <Stack p={3} width="100%" gap="8px">
           <Typography variant="h3">Thời gian rảnh trong tuần</Typography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -322,12 +319,18 @@ const CourseDetail = () => {
               </Stack>
             </Grid>
           </Grid>
-          <Stack
+         
+        </Stack> */}
+
+
+
+        <Stack
             direction="row"
             spacing={2}
             justifyContent="space-between"
             alignItems="center"
           >
+            
             {Boolean(payload?.tutor_available_date?.length) && (
               <Typography variant="h3" color="secondary">
                 Đã học {payload?.tutor_available_date?.length} buổi{' '}
@@ -344,7 +347,7 @@ const CourseDetail = () => {
               Mua
             </Button>
           </Stack>
-        </Stack>
+
       </Dialog>
     </Container>
   );

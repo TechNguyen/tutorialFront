@@ -10,8 +10,9 @@ import {
   SpeakLangueIcon,
   VerifyIcon
 } from '@/components/icons';
-import { Flex, Rate } from 'antd';
-
+import { Flex, message, notification, Rate } from 'antd';
+import type { PaginationProps } from 'antd';
+import { Pagination } from 'antd';
 const desc = ['terrible', 'bad', 'normal', 'good', 'wonderful'];
 
 import TryTutorIcon from '@/components/icons/TryTutorIcon';
@@ -30,7 +31,8 @@ import dayjs, { Dayjs } from 'dayjs';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
-
+import { jwtDecode } from 'jwt-decode';
+import Snackbar from '@mui/material/Snackbar';
 const DetailTutor = () => {
   const ref = useRef<AbortController | null>(null);
   const router = useRouter();
@@ -42,7 +44,39 @@ const DetailTutor = () => {
   const [availableDay, setAvailableDay] = useState(null);
   const [highlightedDays, setHighlightedDays] = useState([]);
   const [timeAvaiLableDay, setTimeAvailableDay] = useState([]);
+  const [tutor_experience, setTutor_experience] = useState({})
+  const [rate, setRate] = useState(0);
 
+  
+  const handleRate = async (value) => {
+
+    const token = localStorage.getItem('access_token');
+
+    if(!token) {
+      handleClick()
+    } else {
+      const decoded = jwtDecode<any>(token);
+
+      if(id) {
+        const resUser = await api.get(`/tutor/${id}`);
+          if(resUser.status == 200) {
+            const res = await api.post('/rate/create', {
+              rate: value,
+              view_id: resUser.data.data.user.user_id,
+              author_id: decoded?.user_id
+            });
+
+            
+        setRate(value)
+        notification.success({message: 'Bạn đã đánh giá thành công'})
+      } else {
+        console.log('error') 
+      }
+    }
+    }
+   
+  }
+  
   useEffect(() => {
     if (id) {
       const getDetailTutor = async () => {
@@ -50,6 +84,8 @@ const DetailTutor = () => {
           const tutorProfile = await api.get(`/tutor/${id}`);
           if (tutorProfile.status === 200) {
             setTutor(tutorProfile.data.data);
+            
+
 
             const course = await api.get(`/course/get-by-tutor-id/${id}`);
             setCourse(course.data.data);
@@ -57,6 +93,7 @@ const DetailTutor = () => {
             const availableTime = await api.get(
               `/tutor-available-date/find-by-userid/${tutorProfile.data.data.user_id}`
             );
+
             setAvailableDay(availableTime.data.data);
             setHighlightedDays(findDayHightLight(availableTime.data.data));
             setTimeAvailableDay(
@@ -70,6 +107,9 @@ const DetailTutor = () => {
           console.log(error);
         }
       };
+
+
+
 
       getDetailTutor();
     }
@@ -89,9 +129,27 @@ const DetailTutor = () => {
     setTimeAvailableDay(chooseAllTimeAvailable(day, availableDay));
   };
 
+
+  const [open, setOpen] = useState(false);
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+
   const handleClickChip = () => {
     // console.log('haha');
   };
+
+
 
   return (
     <Container sx={{ minHeight: '100vh' }}>
@@ -125,7 +183,7 @@ const DetailTutor = () => {
               <VerifyIcon sx={{ fontSize: 18, color: '#4caf50' }} />
             </Typography>
             <Typography variant="h5" color="secondary">
-              Có kinh nghiệm 4 năm trong nghề gia sư
+              Có kinh nghiệm {} năm trong nghề gia sư
             </Typography>
 
             <Stack spacing={1}>
@@ -137,7 +195,7 @@ const DetailTutor = () => {
                   alignItems="center"
                   gap="8px"
                 >
-                  <LangueTeachIcon /> Tiếng việt
+                  <LangueTeachIcon /> {tutor?.tutor_educations?.subjects}
                 </Typography>
               </Stack>
               <Stack>
@@ -148,18 +206,7 @@ const DetailTutor = () => {
                   alignItems="center"
                   gap="8px"
                 >
-                  <PersonIcon /> 20 học sinh đang theo học
-                </Typography>
-              </Stack>
-              <Stack>
-                <Typography
-                  display="flex"
-                  variant="h5"
-                  color="secondary"
-                  alignItems="center"
-                  gap="8px"
-                >
-                  <SpeakLangueIcon /> ngoại ngữ: Tiếng Anh
+                  <PersonIcon /> {} học sinh đang theo học
                 </Typography>
               </Stack>
             </Stack>
@@ -329,13 +376,23 @@ const DetailTutor = () => {
             sx={{
               fontSize: '28px'
             }}
-            value={1}
+            onChange={(e) => {
+              handleRate(e.target["value"])
+            }}
+            value={rate}
           />
         </Stack>
       </Stack>
-
+      {/* <Pagination showQuickJumper defaultCurrent={2} total={500} onChange={onChange} /> */}
       <UserCommentSection id={id} />
+      <Snackbar
+      open={open}
+      autoHideDuration={3000}
+      onClose={handleClose}
+      message="Bạn cần đăng nhập để đánh giá và bình luận"
+    />
     </Container>
+    
   );
 };
 

@@ -9,11 +9,14 @@ import {
 } from '@/const';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  Autocomplete,
   FormControl,
   FormControlLabel,
   FormLabel,
+  InputLabel,
   Radio,
-  RadioGroup
+  RadioGroup,
+  TextField
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -23,7 +26,7 @@ import Typography from '@mui/material/Typography';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSnackbar } from 'notistack';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { ZodType, z } from 'zod';
 import ControlTextField from '../ControlTextField';
@@ -56,6 +59,7 @@ const defaultValues = {
   description: '',
   confirmPassword: '',
   avatar_url: '',
+  category_id: '',
   file_cv: null
 };
 
@@ -94,6 +98,12 @@ function Copyright(props) {
 export default function SignUp() {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
+
+
+
+
+  
+
 
   const schema: ZodType = z
     .object({
@@ -134,12 +144,47 @@ export default function SignUp() {
   } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues });
 
   const [selectedFiles, setSelectedFiles] = useState<File | null>(null);
+  const [selectAvartar, setSelectedAvartar] = useState<File | null>(null);
+
+
+  const [subjects, setsubjects] =  useState([])
   const handleFileChange = async (events: React.ChangeEvent<HTMLInputElement>) => {
     const filelist = events.target.files;
     if(filelist) {
       setSelectedFiles(filelist[0])
     }
   }
+
+
+  
+  const handleAvartarChange = async (events: React.ChangeEvent<HTMLInputElement>) => {
+    const filelist = events.target.files;
+    if(filelist) {
+      setSelectedAvartar(filelist[0])
+    }
+  }
+
+
+  const getSubject = async () => {
+    try {
+     const rs = await api.get('/category')
+     
+     if(rs.status == 200) {
+
+      let subjectArray = [] 
+      rs.data.data.map((item,key) =>  {
+        subjectArray.push({
+          label: item.name,
+          value: item.category_id
+        })
+      })
+      setsubjects(subjectArray)
+     }
+    } catch (e) {
+     console.log(e);
+    }
+  }
+
   const handleRegister = async (data) => {
     try {
       if (router.asPath === STUDENT_REGISTER_PATH) {
@@ -173,23 +218,9 @@ export default function SignUp() {
           formData.append('type', '0');
           formData.append('tutor_profile[stripe_account_id]', data.stripe_account_id);
           formData.append('tutor_profile[description]', data.description);
+          formData.append('category_id', value.value)
           formData.append('file_cv', selectedFiles);
-        // const payload = {
-        //   email: data.email,
-        //   last_name: data.last_name,
-        //   first_name: data.first_name,
-        //   password: data.password,
-        //   phone_number: data.phone_number,
-        //   gender: data.gender,
-        //   role_id: ROLE_TEACHER_ID,
-        //   file: data.avatar_url,
-        //   type: '0',
-        //   tutor_profile: {
-        //     stripe_account_id: data.stripe_account_id,
-        //     description: data.description
-        //   },
-          
-        // };
+          formData.append('avatar_url', selectAvartar);
         
         const res = await api.post(REGISTER_PATH, formData);
         if (res.status === 200) {
@@ -213,6 +244,15 @@ export default function SignUp() {
     }
   };
 
+  const [value, setValue] = useState(null); 
+  const handleChange = (event, newValue) => { 
+    setValue(newValue);
+  };
+
+
+  useEffect(() => {
+    getSubject()
+  }, [])
   const isTutor = useMemo(() => {
     return router.asPath === TEACHER_REGISTER_PATH;
   }, [router.asPath]);
@@ -334,6 +374,41 @@ export default function SignUp() {
             />
           )}
 
+
+          {isTutor && (
+
+
+          <>
+           <InputLabel
+           sx={{
+            '&': {
+              mb: 0.5
+            }
+          }}>
+            Chọn khóa học
+
+
+          </InputLabel>
+          <Autocomplete
+            disablePortal
+            id="combo-box-demo"
+            value={value}
+            options={subjects}
+            onChange={handleChange}
+            sx={{ width: 300 }}
+            renderInput={(params) => (
+              <TextField {...params} fullWidth placeholder="Khóa học" />
+            )}
+          />
+         
+          </>
+         
+
+           
+          )}
+
+
+
           <FormControl fullWidth>
             <FormLabel>Giới tính</FormLabel>
             <Controller
@@ -370,11 +445,21 @@ export default function SignUp() {
                     style={{ display: 'none' }}
                   />
                 </Button>
-           
-
           )}
 
-
+        {isTutor && (
+                  <Button component="label"  variant="contained" startIcon={<CloudUpload />} style={{marginLeft: '10px'}}>
+                  Upload Avartar
+                  <input
+                    type="file"
+                    name="avatar_url"
+                    onChange={(e) => {
+                      handleAvartarChange(e);
+                    }}
+                    style={{ display: 'none'}}
+                  />
+                </Button>
+          )}
 
           <Button
             type="submit"

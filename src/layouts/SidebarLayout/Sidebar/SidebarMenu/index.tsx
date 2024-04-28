@@ -271,7 +271,7 @@ function SidebarMenu() {
                 </NextLink>
               </ListItem>
 
-              <ListItem component="div">
+              <ListItem>
                 <NextLink href="/management/course" passHref>
                   <Button
                     className={
@@ -350,7 +350,6 @@ function SidebarMenu() {
                   </Button>
                 </NextLink>
               </ListItem>
-
               <ListItem component="div">
                 <NextLink href="/management/payment" passHref>
                   <Button
@@ -366,6 +365,35 @@ function SidebarMenu() {
                   </Button>
                 </NextLink>
               </ListItem>
+
+
+
+              <ListItem>
+                <NextLink href="/management/comment" passHref>
+                    <Button className={currentRoute === '/management/comment' ? 'active': ''}
+                    component="a"
+                    disableRipple
+                    onClick={closeSidebar}
+                    startIcon={<TableChartTwoToneIcon />}
+                    >
+                      Bình luận
+                    </Button>
+                </NextLink>
+              </ListItem>
+
+              <ListItem>
+                <NextLink href="/management/rate" passHref>
+                    <Button className={currentRoute === '/management/rate' ? 'active': ''}
+                    component="a"
+                    disableRipple
+                    onClick={closeSidebar}
+                    startIcon={<TableChartTwoToneIcon />}
+                    >
+                      Đánh giá
+                    </Button>
+                </NextLink>
+              </ListItem>
+
             </List>
           </SubMenuWrapper>
         </List>

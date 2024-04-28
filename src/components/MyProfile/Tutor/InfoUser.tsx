@@ -13,8 +13,11 @@ import { Controller, useForm } from 'react-hook-form';
 import { enqueueSnackbar } from 'notistack';
 import api from '@/api';
 import { useRouter } from 'next/router';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import React from 'react';
+import { Space, Table, Tag } from 'antd';
+
 
 const defaultValues = {
   last_name: '',
@@ -22,14 +25,59 @@ const defaultValues = {
   email: '',
   password: '',
   phone_number: '',
-  gender: 'female'
+  gender: 'female',
 };
 
 const InfoUser = ({ data, id }) => {
+
+
+
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'course',
+      key: 'course',
+      render: (text) => (  <a href={`/course/${text.course_id}`} key={text.course_id}>{text.name}</a>),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      key: 'price',
+    },
+    // {
+    //   title: 'Tags',
+    //   key: 'tags',
+    //   dataIndex: 'tags',
+    //   render: (_, { tags }) => (
+    //     <>
+    //       {tags.map((tag) => {
+    //         let color = tag.length > 5 ? 'geekblue' : 'green';
+    //         if (tag === 'loser') {
+    //           color = 'volcano';
+    //         }
+    //         return (
+    //           <Tag color={color} key={tag}>
+    //             {tag.toUpperCase()}
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>
+    //   ),
+    // },
+    
+  ];
+  const [roleName, setRoleName] = useState(null)
   const { handleSubmit, control, setValue } = useForm<FormDataHaha>({
     defaultValues
   });
 
+
+  const [dataRend, setdataRend] = useState([])
   const handleSaveInfo = async (data) => {
     try {
       const res = await api.put(`/user/update-user-info/${id}`, data);
@@ -43,7 +91,31 @@ const InfoUser = ({ data, id }) => {
       console.log(error);
     }
   };
+  const fetchRow = async () => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      const decoded = jwtDecode<any>(token);
+      if(decoded.role_id) {
+        const rs = await api.get(`/role/${decoded.role_id}`)
+        if(rs.status == 200) {
+          setRoleName(rs.data.data.name)
+        }
+      }
+    }
+  }
+  
 
+  const fetchHistory = async () => {
+    const token = localStorage.getItem('access_token');
+    const decoded = jwtDecode<any>(token);
+    const  rs = await api.get(`/booked-session/findBySTID/${decoded.user_id}`)
+    setdataRend(rs.data.data);
+    
+  }
+
+  console.log(dataRend);
+  
+ 
   useEffect(() => {
     if (data) {
       setValue('first_name', data.first_name);
@@ -51,23 +123,40 @@ const InfoUser = ({ data, id }) => {
       setValue('email', data.email);
       setValue('phone_number', data.phone_number || '');
       setValue('gender', data.gender || 'female');
+      fetchRow()
+      fetchHistory()
     }
   }, [data]);
 
   return (
-    <Box component="form">
+    <Box component="form" style={{overflow: 'scroll'}}>
       <h3>Thông tin tài khoản</h3>
       <Box>
-        <ControlTextField
+        {
+          roleName == 'Student' ? <ControlTextField
           control={control}
           name="first_name"
-          label="Tên gia sư"
-        />
-        <ControlTextField
-          control={control}
-          name="last_name"
-          label="Họ gia sư"
-        />
+          label="Tên học sinh"
+        /> : <ControlTextField
+                  control={control}
+                  name="first_name"
+                  label="Tên gia sư"
+        />}
+        
+       {
+        roleName == 'Student' ?  <ControlTextField
+        control={control}
+        name="last_name"
+        label="Họ học sinh"
+      /> :  <ControlTextField
+      control={control}
+      name="last_name"
+      label="Họ gia sư"
+    />
+       }
+
+
+       
         <ControlTextField control={control} name="email" label="email" />
         <ControlTextField
           control={control}
@@ -100,6 +189,11 @@ const InfoUser = ({ data, id }) => {
             />
           </FormControl>
         </Box>
+
+
+             
+        
+       
         <Box
           sx={{
             mt: 3,
@@ -115,6 +209,15 @@ const InfoUser = ({ data, id }) => {
             Lưu
           </Button>
         </Box>
+      </Box>
+
+
+
+      <Box>
+      {
+          roleName == 'Student' && 
+          <Table columns={columns} dataSource={dataRend} />
+        }
       </Box>
     </Box>
   );
